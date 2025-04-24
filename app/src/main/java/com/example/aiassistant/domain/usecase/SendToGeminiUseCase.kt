@@ -7,6 +7,7 @@ import com.example.aiassistant.data.remote.model.InlineData
 import com.example.aiassistant.data.remote.model.Part
 import com.example.aiassistant.utils.Constants
 import com.example.aiassistant.utils.Resource
+import com.example.aiassistant.utils.TextCleaner
 import javax.inject.Inject
 
 class SendToGeminiUseCase @Inject constructor(
@@ -40,7 +41,9 @@ class SendToGeminiUseCase @Inject constructor(
                 ?.firstOrNull()
                 ?.text ?: "No response"
 
-            Resource.Success(text)
+            val cleanedText = TextCleaner.cleanGeminiResponse(text)
+
+            Resource.Success(cleanedText)
 
         } catch (e: Exception) {
             e.printStackTrace()
