@@ -5,8 +5,8 @@ data class GeminiRequest(
 )
 
 data class Content(
-    val parts: List<Part>,
-    val role: String = "user"
+    val role: String = "user",
+    val parts: List<Part>
 )
 
 data class Part(
@@ -16,5 +16,6 @@ data class Part(
 
 data class InlineData(
     val mime_type: String,
-    val data: String // Base64-encoded image
+    val data: String
 )
+

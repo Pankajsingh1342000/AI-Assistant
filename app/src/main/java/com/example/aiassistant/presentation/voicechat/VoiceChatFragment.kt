@@ -1,4 +1,4 @@
-package com.example.aiassistant.presentation.assistant
+package com.example.aiassistant.presentation.voicechat
 
 import android.Manifest
 import android.os.Bundle
@@ -10,68 +10,70 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import com.example.aiassistant.R
-import com.example.aiassistant.databinding.FragmentAssistantBinding
+import com.example.aiassistant.databinding.FragmentVoiceChatBinding
 import com.example.aiassistant.utils.collectWhenStarted
+import dagger.hilt.android.AndroidEntryPoint
 
-class AssistantFragment : Fragment() {
 
-    private var _binding: FragmentAssistantBinding? = null
+@AndroidEntryPoint
+class VoiceChatFragment : Fragment() {
+
+    private var _binding: FragmentVoiceChatBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: AssistantViewModel by viewModels()
+    private val viewModel: VoiceChatViewModel by viewModels()
 
-    private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if(granted) viewModel.startVoiceInput()
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) viewModel.startVoiceInput()
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
-
-        _binding = FragmentAssistantBinding.inflate(inflater, container, false)
+        _binding = FragmentVoiceChatBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         binding.micButton.setOnClickListener {
             permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
         }
-
-        observeViewModel()
+        collectUiState()
     }
 
-    private fun observeViewModel() {
+    private fun collectUiState() {
         viewModel.uiState.collectWhenStarted(viewLifecycleOwner) { state ->
             when (state) {
-                is AssistantUiState.Idle -> {
+                is VoiceChatUiState.Idle -> {
                     binding.statusText.text = "Tap mic to speak"
                     binding.progressBar.isVisible = false
                 }
 
-                is AssistantUiState.Listening -> {
+                is VoiceChatUiState.Listening -> {
                     binding.statusText.text = "Listening..."
                     binding.progressBar.isVisible = false
                 }
 
-                is AssistantUiState.Processing -> {
+                is VoiceChatUiState.Processing -> {
                     binding.statusText.text = "Heard: ${state.input}"
                     binding.progressBar.isVisible = true
                 }
 
-                is AssistantUiState.Loading -> {
+                is VoiceChatUiState.Loading -> {
                     binding.statusText.text = "Thinking..."
                     binding.progressBar.isVisible = true
                 }
 
-                is AssistantUiState.Success -> {
+                is VoiceChatUiState.Success -> {
                     binding.statusText.text = state.response
                     binding.progressBar.isVisible = false
                 }
 
-                is AssistantUiState.Error -> {
+                is VoiceChatUiState.Error -> {
                     binding.statusText.text = "Error: ${state.message}"
                     binding.progressBar.isVisible = false
                 }
@@ -83,4 +85,5 @@ class AssistantFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
 }

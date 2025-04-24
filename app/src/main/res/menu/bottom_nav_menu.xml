@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/voiceChatFragment"
+        android:icon="@android:drawable/ic_btn_speak_now"
+        android:title="Voice" />
+    <item
+        android:id="@+id/imageChatFragment"
+        android:icon="@android:drawable/ic_menu_camera"
+        android:title="Camera" />
+
+</menu>

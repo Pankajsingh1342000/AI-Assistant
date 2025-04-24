@@ -1,4 +1,4 @@
-package com.example.aiassistant.presentation.assistant
+package com.example.aiassistant.presentation.voicechat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,38 +13,38 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AssistantViewModel @Inject constructor(
+class VoiceChatViewModel @Inject constructor(
     private val voiceInputManager: VoiceInputManager,
     private val ttsManager: TTSManager,
     private val sendToGeminiUseCase: SendToGeminiUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<AssistantUiState>(AssistantUiState.Idle)
-    val uiState: StateFlow<AssistantUiState> = _uiState
+    private val _uiState = MutableStateFlow<VoiceChatUiState>(VoiceChatUiState.Idle)
+    val uiState: StateFlow<VoiceChatUiState> = _uiState
 
     fun startVoiceInput() {
-        _uiState.value = AssistantUiState.Listening
+        _uiState.value = VoiceChatUiState.Listening
         voiceInputManager.startListening(
             onResult = { spokenText ->
-                _uiState.value = AssistantUiState.Processing(spokenText)
+                _uiState.value = VoiceChatUiState.Processing(spokenText)
                 askGemini(spokenText)
             },
             onError = { error ->
-                _uiState.value = AssistantUiState.Error(error)
+                _uiState.value = VoiceChatUiState.Error(error)
             }
         )
     }
 
     private fun askGemini(query: String) {
         viewModelScope.launch {
-            _uiState.value = AssistantUiState.Loading
-            when (val result = sendToGeminiUseCase(query)) {
-                is Resource.Success<*> -> {
-                    ttsManager.speak(result.data.toString())
-                    _uiState.value = AssistantUiState.Success(result.data.toString())
+            _uiState.value = VoiceChatUiState.Loading
+            when (val result = sendToGeminiUseCase(query, null)) {
+                is Resource.Success -> {
+                    ttsManager.speak(result.data)
+                    _uiState.value = VoiceChatUiState.Success(result.data)
                 }
                 is Resource.Error -> {
-                    _uiState.value = AssistantUiState.Error(result.message ?: "Unknown error")
+                    _uiState.value = VoiceChatUiState.Error(result.message ?: "Unknown error")
                 }
                 else -> Unit
             }

@@ -1,14 +1,15 @@
 package com.example.aiassistant.data.remote.model
 
 data class GeminiResponse(
-    val candidates: List<Candidate>
+    val candidates: List<Candidate>?
 )
 
 data class Candidate(
-    val content: ContentResponse
+    val content: ContentData
 )
 
-data class ContentResponse(
+data class ContentData(
+    val role: String,
     val parts: List<PartResponse>
 )
 

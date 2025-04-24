@@ -12,7 +12,6 @@ class VoiceInputManager @Inject constructor(
     private val context: Context
 ) {
     private var speechRecognizer: SpeechRecognizer? = null
-    private var recognitionListener: RecognitionListener? = null
 
     fun startListening(onResult: (String) -> Unit, onError: (String) -> Unit) {
         if (!SpeechRecognizer.isRecognitionAvailable(context)) {
@@ -20,21 +19,17 @@ class VoiceInputManager @Inject constructor(
             return
         }
 
-        if (speechRecognizer == null) {
-            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
-        }
-
+        // Cleanup existing
+        speechRecognizer?.destroy()
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
 
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-            )
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false)
         }
 
-        recognitionListener = object : RecognitionListener {
+        speechRecognizer?.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {}
             override fun onBeginningOfSpeech() {}
             override fun onRmsChanged(rmsdB: Float) {}
@@ -54,13 +49,11 @@ class VoiceInputManager @Inject constructor(
                 }
             }
 
-            override fun onPartialResults(partialResults: Bundle?) {
-            }
+            override fun onPartialResults(partialResults: Bundle?) {}
+            override fun onEvent(eventType: Int, params: Bundle?) {}
+        })
 
-            override fun onEvent(eventType: Int, params: Bundle?) {
-            }
-
-        }
+        speechRecognizer?.startListening(intent)
     }
 
     fun stopListening() {
