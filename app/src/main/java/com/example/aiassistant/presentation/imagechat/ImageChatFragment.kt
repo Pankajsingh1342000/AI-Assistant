@@ -7,13 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import com.example.aiassistant.R
+import androidx.lifecycle.lifecycleScope
 import com.example.aiassistant.data.manager.CameraManager
 import com.example.aiassistant.databinding.FragmentImageChatBinding
 import com.example.aiassistant.utils.collectWhenStarted
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 
@@ -79,35 +79,30 @@ class ImageChatFragment : Fragment() {
     }
 
     private fun observeState() {
-        viewModel.uiState.collectWhenStarted(viewLifecycleOwner) { state->
-            when (state) {
-                is ImageChatUiState.Idle -> {
-                    binding.statusText.text = "Tap to ask about an image"
-                    binding.progressBar.isVisible = false
-                }
-                is ImageChatUiState.Listening -> {
-                    binding.statusText.text = "Listening..."
-                    binding.progressBar.isVisible = false
-                }
-                is ImageChatUiState.Processing -> {
-                    binding.statusText.text = "Heard: ${state.input}"
-                    binding.progressBar.isVisible = true
-                }
-                is ImageChatUiState.Capturing -> {
-                    binding.statusText.text = "Capturing image..."
-                    binding.progressBar.isVisible = true
-                }
-                is ImageChatUiState.Loading -> {
-                    binding.statusText.text = "Thinking..."
-                    binding.progressBar.isVisible = true
-                }
-                is ImageChatUiState.Success -> {
-                    binding.statusText.text = state.response
-                    binding.progressBar.isVisible = false
-                }
-                is ImageChatUiState.Error -> {
-                    binding.statusText.text = "Error: ${state.message}"
-                    binding.progressBar.isVisible = false
+        lifecycleScope.launch {
+            viewModel.uiState.collectWhenStarted(viewLifecycleOwner) { state->
+                when (state) {
+                    is ImageChatUiState.Idle -> {
+                        binding.statusText.text = "Tap to ask about an image"
+                    }
+                    is ImageChatUiState.Listening -> {
+                        binding.statusText.text = "Listening..."
+                    }
+                    is ImageChatUiState.Processing -> {
+                        binding.statusText.text = "Heard: ${state.input}"
+                    }
+                    is ImageChatUiState.Capturing -> {
+                        binding.statusText.text = "Capturing image..."
+                    }
+                    is ImageChatUiState.Loading -> {
+                        binding.statusText.text = "Thinking..."
+                    }
+                    is ImageChatUiState.Success -> {
+                        binding.statusText.text = state.response
+                    }
+                    is ImageChatUiState.Error -> {
+                        binding.statusText.text = "Error: ${state.message}"
+                    }
                 }
             }
         }
