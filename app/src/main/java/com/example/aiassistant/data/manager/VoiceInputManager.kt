@@ -19,7 +19,6 @@ class VoiceInputManager @Inject constructor(
             return
         }
 
-        // Cleanup existing
         speechRecognizer?.destroy()
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
 

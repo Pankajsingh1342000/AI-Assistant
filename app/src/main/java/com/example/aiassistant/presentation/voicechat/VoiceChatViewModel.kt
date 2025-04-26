@@ -7,6 +7,7 @@ import com.example.aiassistant.data.manager.VoiceInputManager
 import com.example.aiassistant.domain.usecase.SendToGeminiUseCase
 import com.example.aiassistant.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -40,8 +41,17 @@ class VoiceChatViewModel @Inject constructor(
             _uiState.value = VoiceChatUiState.Loading
             when (val result = sendToGeminiUseCase(query, null)) {
                 is Resource.Success -> {
-                    ttsManager.speak(result.data)
-                    _uiState.value = VoiceChatUiState.Success(result.data)
+                    val responseText = result.data
+                    _uiState.value = VoiceChatUiState.Success(responseText)
+
+                    ttsManager.speak(responseText,
+                        onStart = {
+                            // Speech started
+                        },
+                        onWordRange = { start, end ->
+                            _uiState.value = VoiceChatUiState.HighlightByRange(responseText, start, end)
+                        }
+                    )
                 }
                 is Resource.Error -> {
                     _uiState.value = VoiceChatUiState.Error(result.message ?: "Unknown error")

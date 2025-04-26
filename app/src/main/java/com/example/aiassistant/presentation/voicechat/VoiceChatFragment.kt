@@ -56,11 +56,43 @@ class VoiceChatFragment : Fragment() {
                     is VoiceChatUiState.Loading -> showListeningState()
                     is VoiceChatUiState.Success -> showResponse(state.response)
                     is VoiceChatUiState.Error -> showError(state.message)
+                    is VoiceChatUiState.HighlightByRange -> highlightWordInRange(state.response, state.start, state.end)
                     else -> Unit
                 }
             }
         }
     }
+
+    private fun highlightWordInRange(text: String, start: Int, end: Int) {
+        val spannable = android.text.SpannableString(text)
+        spannable.setSpan(
+            android.text.style.ForegroundColorSpan(
+                androidx.core.content.ContextCompat.getColor(requireContext(), R.color.micBackground)
+            ),
+            start, end,
+            android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        spannable.setSpan(
+            android.text.style.StyleSpan(android.graphics.Typeface.BOLD),
+            start, end,
+            android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        binding.statusText.text = spannable
+
+        scrollToHighlighted(start)
+    }
+
+    private fun scrollToHighlighted(start: Int) {
+        binding.statusText.post {
+            val layout = binding.statusText.layout
+            if (layout != null) {
+                val line = layout.getLineForOffset(start)
+                val y = layout.getLineTop(line)
+                binding.scrollView.smoothScrollTo(0, y)
+            }
+        }
+    }
+
 
     private fun showListeningState() {
         animateGlow(true)

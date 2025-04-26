@@ -55,8 +55,19 @@ class ImageChatViewModel @Inject constructor(
             val result = sendToGeminiUseCase(query, base64Image)
             when (result) {
                 is Resource.Success -> {
-                    ttsManager.speak(result.data)
-                    _uiState.value = ImageChatUiState.Success(result.data)
+
+                    val responseText = result.data
+                    _uiState.value = ImageChatUiState.Success(responseText)
+
+                    ttsManager.speak(responseText,
+                        onStart = {
+                            // Speech started
+                        },
+                        onWordRange = { start, end ->
+                            _uiState.value = ImageChatUiState.HighlightByRange(responseText, start, end)
+                        }
+                    )
+
                 }
                 is Resource.Error -> {
                     _uiState.value = ImageChatUiState.Error(result.message ?: "Unknown error")

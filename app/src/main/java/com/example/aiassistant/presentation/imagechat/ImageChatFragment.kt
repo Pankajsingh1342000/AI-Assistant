@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.example.aiassistant.R
 import com.example.aiassistant.data.manager.CameraManager
 import com.example.aiassistant.databinding.FragmentImageChatBinding
 import com.example.aiassistant.utils.collectWhenStarted
@@ -103,10 +104,43 @@ class ImageChatFragment : Fragment() {
                     is ImageChatUiState.Error -> {
                         binding.statusText.text = "Error: ${state.message}"
                     }
+                    is ImageChatUiState.HighlightByRange -> highlightWordInRange(state.response, state.start, state.end)
                 }
             }
         }
     }
+
+
+    private fun highlightWordInRange(text: String, start: Int, end: Int) {
+        val spannable = android.text.SpannableString(text)
+        spannable.setSpan(
+            android.text.style.ForegroundColorSpan(
+                androidx.core.content.ContextCompat.getColor(requireContext(), R.color.micBackground)
+            ),
+            start, end,
+            android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        spannable.setSpan(
+            android.text.style.StyleSpan(android.graphics.Typeface.BOLD),
+            start, end,
+            android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        binding.statusText.text = spannable
+
+        scrollToHighlighted(start)
+    }
+
+    private fun scrollToHighlighted(start: Int) {
+        binding.statusText.post {
+            val layout = binding.statusText.layout
+            if (layout != null) {
+                val line = layout.getLineForOffset(start)
+                val y = layout.getLineTop(line)
+                binding.scrollView.smoothScrollTo(0, y)
+            }
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
