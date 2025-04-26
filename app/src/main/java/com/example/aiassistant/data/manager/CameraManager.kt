@@ -1,7 +1,6 @@
 package com.example.aiassistant.data.manager
 
 import android.content.Context
-import android.view.Surface
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -9,63 +8,89 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import javax.inject.Inject
 
 class CameraManager @Inject constructor(
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) {
+
     private var imageCapture: ImageCapture? = null
-    private val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    private var cameraProvider: ProcessCameraProvider? = null
 
     fun startCamera(
-        lifecycleOwner: LifecycleOwner,
+        lifecycleOwner: androidx.lifecycle.LifecycleOwner,
         previewView: PreviewView,
         onError: (String) -> Unit
     ) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
-
         cameraProviderFuture.addListener({
+            cameraProvider = cameraProviderFuture.get()
+
             try {
-                val cameraProvider = cameraProviderFuture.get()
-                val preview = Preview.Builder().build().apply {
-                    setSurfaceProvider(previewView.surfaceProvider)
+                cameraProvider?.unbindAll()
+
+                val preview = Preview.Builder()
+                    .build()
+                    .also {
+                        it.setSurfaceProvider(previewView.surfaceProvider)
+                    }
+
+                imageCapture = ImageCapture.Builder()
+                    .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                    .build()
+
+                // ✅ Try to use BACK camera, otherwise use FRONT
+                val cameraSelector = if (cameraProvider!!.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA)) {
+                    CameraSelector.DEFAULT_BACK_CAMERA
+                } else if (cameraProvider!!.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA)) {
+                    CameraSelector.DEFAULT_FRONT_CAMERA
+                } else {
+                    onError("No available camera on device")
+                    return@addListener
                 }
 
-                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                cameraProvider?.bindToLifecycle(
+                    lifecycleOwner,
+                    cameraSelector,
+                    preview,
+                    imageCapture
+                )
 
-                imageCapture = ImageCapture.Builder().build()
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageCapture)
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-                onError("Camera start failed: ${e.message}")
+            } catch (exc: Exception) {
+                onError("Camera binding failed: ${exc.message}")
             }
         }, ContextCompat.getMainExecutor(context))
     }
 
+    fun stopCamera() {
+        cameraProvider?.unbindAll()
+    }
 
     fun captureImage(file: File, onCaptured: (File) -> Unit, onError: (String) -> Unit) {
-        val capture = imageCapture ?: return onError("ImageCapture not ready")
+        val imageCapture = imageCapture ?: run {
+            onError("ImageCapture is not ready")
+            return
+        }
 
-        val output = ImageCapture.OutputFileOptions.Builder(file).build()
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
 
-        capture.takePicture(
-            output,
+        imageCapture.takePicture(
+            outputOptions,
             ContextCompat.getMainExecutor(context),
-            object: ImageCapture.OnImageSavedCallback {
+            object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    onCaptured(file)
+                    try {
+                        onCaptured(file)
+                    } catch (e: Exception) {
+                        onError("Failed to decode image: ${e.message}")
+                    }
                 }
 
                 override fun onError(exception: ImageCaptureException) {
                     onError("Capture failed: ${exception.message}")
                 }
-
             }
         )
     }

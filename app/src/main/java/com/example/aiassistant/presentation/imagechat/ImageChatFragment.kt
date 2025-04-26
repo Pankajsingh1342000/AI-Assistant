@@ -30,27 +30,17 @@ class ImageChatFragment : Fragment() {
     @Inject
     lateinit var cameraManager: CameraManager
 
+    private var cameraPermissionGranted = false
+    private var isCameraActive = false
+
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        if (permissions[Manifest.permission.CAMERA] == true &&
-            permissions[Manifest.permission.RECORD_AUDIO] == true
-        ) {
-            cameraManager.startCamera(
-                lifecycleOwner = viewLifecycleOwner,
-                previewView = binding.cameraPreview,
-                onError = { error ->
-                    binding.statusText.text = error
-                }
-            )
-
-        }
+        cameraPermissionGranted = permissions[Manifest.permission.CAMERA] == true &&
+                permissions[Manifest.permission.RECORD_AUDIO] == true
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentImageChatBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -58,30 +48,70 @@ class ImageChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        hideCamera()
+
         permissionLauncher.launch(
             arrayOf(
                 Manifest.permission.CAMERA,
                 Manifest.permission.RECORD_AUDIO
             )
         )
+
         binding.captureButton.setOnClickListener {
-            val file = File(requireContext().cacheDir, "image.jpg")
-            cameraManager.captureImage(
-                file,
-                onCaptured = {
-                    viewModel.startVoiceAndImageFlow(file)
-                },
-                onError = { error ->
-                    binding.statusText.text = "Capture failed: $error"
-                }
-            )
+            if (!cameraPermissionGranted) {
+                permissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.RECORD_AUDIO
+                    )
+                )
+                return@setOnClickListener
+            }
+
+            if (!isCameraActive) {
+                showCamera()
+            } else {
+                captureImageAndAsk()
+            }
         }
+
         observeState()
+    }
+
+    private fun showCamera() {
+        binding.cameraPreview.visibility = View.VISIBLE
+        cameraManager.startCamera(
+            lifecycleOwner = viewLifecycleOwner,
+            previewView = binding.cameraPreview,
+            onError = { error ->
+                binding.statusText.text = "Camera error: $error"
+            }
+        )
+        isCameraActive = true
+    }
+
+    private fun hideCamera() {
+        cameraManager.stopCamera()
+        binding.cameraPreview.visibility = View.GONE
+        isCameraActive = false
+    }
+
+    private fun captureImageAndAsk() {
+        val file = File(requireContext().cacheDir, "image.jpg")
+        cameraManager.captureImage(
+            file,
+            onCaptured = {
+                viewModel.startVoiceAndImageFlow(file)
+            },
+            onError = { error ->
+                binding.statusText.text = "Capture failed: $error"
+            }
+        )
     }
 
     private fun observeState() {
         lifecycleScope.launch {
-            viewModel.uiState.collectWhenStarted(viewLifecycleOwner) { state->
+            viewModel.uiState.collectWhenStarted(viewLifecycleOwner) { state ->
                 when (state) {
                     is ImageChatUiState.Idle -> {
                         binding.statusText.text = "Tap to ask about an image"
@@ -97,19 +127,21 @@ class ImageChatFragment : Fragment() {
                     }
                     is ImageChatUiState.Loading -> {
                         binding.statusText.text = "Thinking..."
+                        hideCamera()
                     }
                     is ImageChatUiState.Success -> {
                         binding.statusText.text = state.response
+//                        hideCamera()
                     }
                     is ImageChatUiState.Error -> {
                         binding.statusText.text = "Error: ${state.message}"
+                        hideCamera()
                     }
                     is ImageChatUiState.HighlightByRange -> highlightWordInRange(state.response, state.start, state.end)
                 }
             }
         }
     }
-
 
     private fun highlightWordInRange(text: String, start: Int, end: Int) {
         val spannable = android.text.SpannableString(text)
@@ -139,7 +171,6 @@ class ImageChatFragment : Fragment() {
                 val lineBottom = layout.getLineBottom(line)
 
                 val centerY = (lineTop + lineBottom) / 2
-
                 val scrollViewHeight = binding.scrollView.height
                 val scrollY = centerY - scrollViewHeight / 2
 
