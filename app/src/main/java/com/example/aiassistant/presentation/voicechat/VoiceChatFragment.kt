@@ -87,8 +87,15 @@ class VoiceChatFragment : Fragment() {
             val layout = binding.statusText.layout
             if (layout != null) {
                 val line = layout.getLineForOffset(start)
-                val y = layout.getLineTop(line)
-                binding.scrollView.smoothScrollTo(0, y)
+                val lineTop = layout.getLineTop(line)
+                val lineBottom = layout.getLineBottom(line)
+
+                val centerY = (lineTop + lineBottom) / 2
+
+                val scrollViewHeight = binding.scrollView.height
+                val scrollY = centerY - scrollViewHeight / 2
+
+                binding.scrollView.smoothScrollTo(0, scrollY.coerceAtLeast(0))
             }
         }
     }
