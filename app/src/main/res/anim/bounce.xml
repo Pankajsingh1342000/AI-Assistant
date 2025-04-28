@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fillAfter="false">
+    
+    <!-- Quick press down -->
+    <scale
+        android:duration="100"
+        android:fromXScale="1.0"
+        android:fromYScale="1.0"
+        android:interpolator="@android:anim/accelerate_interpolator"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:toXScale="0.95"
+        android:toYScale="0.95" />
+        
+    <!-- Smooth bounce back with slight overshoot -->
+    <scale
+        android:duration="300"
+        android:fromXScale="0.95"
+        android:fromYScale="0.95"
+        android:interpolator="@android:anim/overshoot_interpolator"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:startOffset="100"
+        android:toXScale="1.0"
+        android:toYScale="1.0" />
+        
+    <!-- Subtle fade effect -->
+    <alpha
+        android:duration="50"
+        android:fromAlpha="1.0"
+        android:interpolator="@android:anim/accelerate_interpolator"
+        android:toAlpha="0.8" />
+        
+    <alpha
+        android:duration="150"
+        android:fromAlpha="0.8"
+        android:interpolator="@android:anim/decelerate_interpolator"
+        android:startOffset="50"
+        android:toAlpha="1.0" />
+</set> 

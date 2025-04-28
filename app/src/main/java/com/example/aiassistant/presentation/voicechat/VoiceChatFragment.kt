@@ -42,8 +42,11 @@ class VoiceChatFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
         binding.micButton.setOnClickListener {
+            // Apply bounce animation
+            val bounceAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.bounce)
+            binding.micButton.startAnimation(bounceAnim)
+            
             permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
         }
         observeState()

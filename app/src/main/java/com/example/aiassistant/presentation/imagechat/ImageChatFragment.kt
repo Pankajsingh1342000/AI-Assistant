@@ -17,6 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
+import android.view.animation.AnimationUtils
 
 
 @AndroidEntryPoint
@@ -58,6 +59,10 @@ class ImageChatFragment : Fragment() {
         )
 
         binding.captureButton.setOnClickListener {
+            // Apply bounce animation
+            val bounceAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.bounce)
+            binding.captureButton.startAnimation(bounceAnim)
+            
             if (!cameraPermissionGranted) {
                 permissionLauncher.launch(
                     arrayOf(

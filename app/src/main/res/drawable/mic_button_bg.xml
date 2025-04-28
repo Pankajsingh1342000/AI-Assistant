@@ -5,6 +5,9 @@
     <item>
         <shape android:shape="oval">
             <solid android:color="@color/micBackground" />
+            <stroke
+                android:width="2dp"
+                android:color="@color/micBackground" />
         </shape>
     </item>
 </ripple>
