@@ -27,25 +27,14 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    // ✅ Application Context
     @Provides
     @Singleton
     fun provideContext(app: Application): Context = app.applicationContext
 
-    // ✅ TextToSpeech
-    @Provides
-    @Singleton
-    fun provideTextToSpeech(app: Application): TextToSpeech =
-        TextToSpeech(app) {}.apply {
-            language = Locale.US
-        }
-
-    // ✅ Gson
     @Provides
     @Singleton
     fun provideGson(): Gson = GsonBuilder().create()
 
-    // ✅ OkHttp with Logging
     @Provides
     @Singleton
     fun provideOkHttp(): OkHttpClient = OkHttpClient.Builder()
@@ -54,7 +43,6 @@ object AppModule {
         })
         .build()
 
-    // ✅ Retrofit
     @Provides
     @Singleton
     fun provideRetrofit(okHttp: OkHttpClient, gson: Gson): Retrofit =
@@ -64,31 +52,21 @@ object AppModule {
             .client(okHttp)
             .build()
 
-    // ✅ Gemini API
     @Provides
     @Singleton
     fun provideGeminiApi(retrofit: Retrofit): GeminiApiService =
         retrofit.create(GeminiApiService::class.java)
 
-    // ✅ Voice Input
     @Provides
     @Singleton
     fun provideVoiceInputManager(context: Context): VoiceInputManager =
         VoiceInputManager(context)
 
-    // ✅ TTS Manager
-    @Provides
-    @Singleton
-    fun provideTTSManager(tts: TextToSpeech): TTSManager =
-        TTSManager(tts)
-
-    // ✅ Camera Manager
     @Provides
     @Singleton
     fun provideCameraManager(context: Context): CameraManager =
         CameraManager(context)
 
-    // ✅ Image Processor
     @Provides
     @Singleton
     fun provideImageProcessor(): ImageProcessor = ImageProcessor()
