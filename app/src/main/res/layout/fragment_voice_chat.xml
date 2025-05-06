@@ -50,6 +50,17 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <com.example.aiassistant.presentation.customview.MicWaveformView
+        android:id="@+id/micWaveView"
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:visibility="gone"
+        app:barCount="7"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/micWrapper"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
 
     <FrameLayout
         android:id="@+id/micWrapper"

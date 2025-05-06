@@ -43,11 +43,18 @@ class VoiceChatFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.micButton.setOnClickListener {
-            // Apply bounce animation
             val bounceAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.bounce)
             binding.micButton.startAnimation(bounceAnim)
-            
+
+            binding.statusText.text = ""
+
+            binding.layoutCard.visibility = View.GONE
+            binding.micWaveView.visibility = View.VISIBLE
+
             permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+        }
+        viewModel.setAmplitudeListener { amp ->
+            binding.micWaveView.updateAmplitude(amp)
         }
         observeState()
     }
@@ -106,18 +113,24 @@ class VoiceChatFragment : Fragment() {
 
     private fun showListeningState() {
         animateGlow(true)
-        binding.statusText.text = "Listening..."
-        binding.responseCard.visibility = View.VISIBLE
+        binding.layoutCard.visibility = View.GONE
+        binding.micWaveView.visibility = View.VISIBLE
     }
 
     private fun showResponse(response: String) {
         animateGlow(false)
+        binding.micWaveView.stop()
+        binding.micWaveView.visibility = View.GONE
+        binding.layoutCard.visibility = View.VISIBLE
         binding.statusText.text = response
         animateResponseCard()
     }
 
     private fun showError(message: String) {
         animateGlow(false)
+        binding.micWaveView.stop()
+        binding.micWaveView.visibility = View.GONE
+        binding.layoutCard.visibility = View.VISIBLE
         binding.statusText.text = message
     }
 

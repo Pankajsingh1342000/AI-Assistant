@@ -62,7 +62,11 @@ class ImageChatFragment : Fragment() {
             // Apply bounce animation
             val bounceAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.bounce)
             binding.captureButton.startAnimation(bounceAnim)
-            
+
+            binding.statusText.text = ""
+            binding.layoutCard.visibility = View.GONE
+            binding.micWaveView.visibility = View.VISIBLE
+
             if (!cameraPermissionGranted) {
                 permissionLauncher.launch(
                     arrayOf(
@@ -80,11 +84,19 @@ class ImageChatFragment : Fragment() {
             }
         }
 
+        viewModel.setAmplitudeListener { amp ->
+            binding.micWaveView.updateAmplitude(amp)
+        }
+
         observeState()
     }
 
     private fun showCamera() {
         binding.cameraPreview.visibility = View.VISIBLE
+        binding.micWaveView.stop()
+        binding.micWaveView.visibility = View.GONE
+        binding.layoutCard.visibility = View.VISIBLE
+        binding.statusText.text = "Tap Button to Ask and Capture"
         cameraManager.startCamera(
             lifecycleOwner = viewLifecycleOwner,
             previewView = binding.cameraPreview,
@@ -98,6 +110,9 @@ class ImageChatFragment : Fragment() {
     private fun hideCamera() {
         cameraManager.stopCamera()
         binding.cameraPreview.visibility = View.GONE
+        binding.micWaveView.stop()
+        binding.layoutCard.visibility = View.VISIBLE
+        binding.micWaveView.visibility = View.GONE
         isCameraActive = false
     }
 
@@ -119,26 +134,41 @@ class ImageChatFragment : Fragment() {
             viewModel.uiState.collectWhenStarted(viewLifecycleOwner) { state ->
                 when (state) {
                     is ImageChatUiState.Idle -> {
-                        binding.statusText.text = "Tap to ask about an image"
+                        binding.statusText.text = "Tap button to open camera"
                     }
                     is ImageChatUiState.Listening -> {
-                        binding.statusText.text = "Listening..."
+                        binding.layoutCard.visibility = View.GONE
+                        binding.micWaveView.visibility = View.VISIBLE
                     }
                     is ImageChatUiState.Processing -> {
+                        binding.micWaveView.stop()
+                        binding.layoutCard.visibility = View.VISIBLE
+                        binding.micWaveView.visibility = View.GONE
                         binding.statusText.text = "Heard: ${state.input}"
                     }
                     is ImageChatUiState.Capturing -> {
+                        binding.micWaveView.stop()
+                        binding.layoutCard.visibility = View.VISIBLE
+                        binding.micWaveView.visibility = View.GONE
                         binding.statusText.text = "Capturing image..."
                     }
                     is ImageChatUiState.Loading -> {
+                        binding.micWaveView.stop()
+                        binding.layoutCard.visibility = View.VISIBLE
+                        binding.micWaveView.visibility = View.GONE
                         binding.statusText.text = "Thinking..."
                         hideCamera()
                     }
                     is ImageChatUiState.Success -> {
+                        binding.micWaveView.stop()
+                        binding.micWaveView.visibility = View.GONE
+                        binding.layoutCard.visibility = View.VISIBLE
                         binding.statusText.text = state.response
-//                        hideCamera()
                     }
                     is ImageChatUiState.Error -> {
+                        binding.micWaveView.stop()
+                        binding.micWaveView.visibility = View.GONE
+                        binding.layoutCard.visibility = View.VISIBLE
                         binding.statusText.text = "Error: ${state.message}"
                         hideCamera()
                     }

@@ -77,6 +77,10 @@ class ImageChatViewModel @Inject constructor(
         }
     }
 
+    fun setAmplitudeListener(listener: (Int) -> Unit) {
+        voiceInputManager.setAmplitudeListener(listener)
+    }
+
     override fun onCleared() {
         super.onCleared()
         ttsManager.shutdown()
