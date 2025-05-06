@@ -61,6 +61,8 @@ camerax-view = { group = "androidx.camera", name = "camera-view", version.ref = 
 # LeakCanary (debug only)
 leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
 
+# Lottie Animation
+lottie = { group = "com.airbnb.android", name = "lottie", version = "6.1.0" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

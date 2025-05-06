@@ -150,25 +150,35 @@ class ImageChatFragment : Fragment() {
                         binding.micWaveView.stop()
                         binding.layoutCard.visibility = View.VISIBLE
                         binding.micWaveView.visibility = View.GONE
-                        binding.statusText.text = "Capturing image..."
+                        binding.responseCard.visibility = View.GONE
+                        binding.capturingAnimationView.visibility = View.VISIBLE
+//                        binding.statusText.text = "Capturing image..."
                     }
                     is ImageChatUiState.Loading -> {
                         binding.micWaveView.stop()
                         binding.layoutCard.visibility = View.VISIBLE
                         binding.micWaveView.visibility = View.GONE
-                        binding.statusText.text = "Thinking..."
+                        binding.responseCard.visibility = View.GONE
+                        binding.capturingAnimationView.visibility = View.GONE
+                        binding.thinkingAnimationView.visibility = View.VISIBLE
+//                        binding.statusText.text = "Thinking..."
                         hideCamera()
                     }
                     is ImageChatUiState.Success -> {
                         binding.micWaveView.stop()
                         binding.micWaveView.visibility = View.GONE
                         binding.layoutCard.visibility = View.VISIBLE
+                        binding.responseCard.visibility = View.VISIBLE
+                        binding.thinkingAnimationView.visibility = View.GONE
                         binding.statusText.text = state.response
                     }
                     is ImageChatUiState.Error -> {
                         binding.micWaveView.stop()
                         binding.micWaveView.visibility = View.GONE
+                        binding.capturingAnimationView.visibility = View.GONE
+                        binding.thinkingAnimationView.visibility = View.GONE
                         binding.layoutCard.visibility = View.VISIBLE
+                        binding.responseCard.visibility = View.VISIBLE
                         binding.statusText.text = "Error: ${state.message}"
                         hideCamera()
                     }
