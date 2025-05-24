@@ -4,4 +4,6 @@
     <color name="micBackground">#2196F3</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="cardColor">#BBC2E6</color>
+    <color name="backgroundColor">#D9E2FF</color>
 </resources>
