@@ -63,7 +63,8 @@ class VoiceChatFragment : Fragment() {
         lifecycleScope.launch {
             viewModel.uiState.collectWhenStarted(viewLifecycleOwner) { state ->
                 when (state) {
-                    is VoiceChatUiState.Loading -> showListeningState()
+                    is VoiceChatUiState.Listening -> showListeningState()
+                    is VoiceChatUiState.Loading -> showLoadingState()
                     is VoiceChatUiState.Success -> showResponse(state.response)
                     is VoiceChatUiState.Error -> showError(state.message)
                     is VoiceChatUiState.HighlightByRange -> highlightWordInRange(state.response, state.start, state.end)
@@ -117,11 +118,21 @@ class VoiceChatFragment : Fragment() {
         binding.micWaveView.visibility = View.VISIBLE
     }
 
+    private fun showLoadingState() {
+        binding.layoutCard.visibility = View.VISIBLE
+        binding.responseCard.visibility = View.GONE
+        binding.micWaveView.stop()
+        binding.micWaveView.visibility = View.GONE
+        binding.thinkingAnimationView.visibility = View.VISIBLE
+    }
+
     private fun showResponse(response: String) {
         animateGlow(false)
         binding.micWaveView.stop()
         binding.micWaveView.visibility = View.GONE
+        binding.thinkingAnimationView.visibility = View.GONE
         binding.layoutCard.visibility = View.VISIBLE
+        binding.responseCard.visibility = View.VISIBLE
         binding.statusText.text = response
         animateResponseCard()
     }

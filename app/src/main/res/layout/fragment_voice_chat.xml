@@ -17,6 +17,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/thinkingAnimationView"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            app:lottie_fileName="thinking.json"
+            app:lottie_loop="true"
+            app:lottie_autoPlay="true"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+
         <androidx.cardview.widget.CardView
             android:id="@+id/responseCard"
             android:layout_width="match_parent"
