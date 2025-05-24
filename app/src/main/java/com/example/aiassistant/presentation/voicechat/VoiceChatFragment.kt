@@ -47,7 +47,8 @@ class VoiceChatFragment : Fragment() {
             binding.micButton.startAnimation(bounceAnim)
 
             binding.statusText.text = ""
-
+            binding.thinkingAnimationView.visibility = View.GONE
+            binding.responseCard.visibility = View.GONE
             binding.layoutCard.visibility = View.GONE
             binding.micWaveView.visibility = View.VISIBLE
 
@@ -115,15 +116,17 @@ class VoiceChatFragment : Fragment() {
     private fun showListeningState() {
         animateGlow(true)
         binding.layoutCard.visibility = View.GONE
+        binding.responseCard.visibility = View.GONE
+        binding.thinkingAnimationView.visibility = View.GONE
         binding.micWaveView.visibility = View.VISIBLE
     }
 
     private fun showLoadingState() {
-        binding.layoutCard.visibility = View.VISIBLE
-        binding.responseCard.visibility = View.GONE
         binding.micWaveView.stop()
         binding.micWaveView.visibility = View.GONE
+        binding.responseCard.visibility = View.GONE
         binding.thinkingAnimationView.visibility = View.VISIBLE
+        binding.layoutCard.visibility = View.VISIBLE
     }
 
     private fun showResponse(response: String) {
@@ -134,14 +137,15 @@ class VoiceChatFragment : Fragment() {
         binding.layoutCard.visibility = View.VISIBLE
         binding.responseCard.visibility = View.VISIBLE
         binding.statusText.text = response
-        animateResponseCard()
     }
 
     private fun showError(message: String) {
         animateGlow(false)
         binding.micWaveView.stop()
         binding.micWaveView.visibility = View.GONE
+        binding.thinkingAnimationView.visibility = View.GONE
         binding.layoutCard.visibility = View.VISIBLE
+        binding.responseCard.visibility = View.VISIBLE
         binding.statusText.text = message
     }
 
@@ -150,11 +154,6 @@ class VoiceChatFragment : Fragment() {
             .alpha(if (show) 1f else 0f)
             .setDuration(300)
             .start()
-    }
-
-    private fun animateResponseCard() {
-        val anim = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_fade_in)
-        binding.responseCard.startAnimation(anim)
     }
 
     override fun onDestroyView() {
